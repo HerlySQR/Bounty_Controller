@@ -1,0 +1,303 @@
+package BountyController
+
+import Table
+import LinkedList
+import ClosureTimers
+import ErrorHandling
+
+//This constants can be edited (obviously only valid values)
+constant string DEF_COLOR_GOLD = "|cffffcc00"
+constant string DEF_COLOR_LUMBER = "|cff32cd32"
+constant real DEF_SIZE = 10.00
+constant real DEF_LIFE_SPAN = 3.50
+constant real DEF_AGE = 0.00
+constant real DEF_SPEED = 64
+constant real DEF_DIRECTION = 90
+constant real DEF_FADE_POINT = 2.50
+constant string DEF_STATE = "gold"
+constant real DEF_HEIGHT = 0
+constant boolean DEF_SHOW = true
+constant boolean DEF_SHOW_NOTHING = false
+constant boolean DEF_ALLOW_FRIEND_FIRE = false
+constant string DEF_EFFECT = "UI\\Feedback\\GoldCredit\\GoldCredit.mdl"
+constant boolean DEF_SHOW_EFFECT = true
+constant boolean DEF_PERMANENT = false
+constant integer LIMIT_RECURSION = 16 // If a loop caused by recursion is doing in porpouse you can edit the tolerance of how many calls can do
+
+// End of configuration
+
+// To register and broadcast bounty events
+interface BountyCallback
+    function run(Bounty bounty)
+
+public abstract class BountyListener
+    int index
+    BountyEvent whatEvent
+    BountyCallback cb
+
+    construct(BountyCallback cb, int index, BountyEvent whatEvent)
+        this.cb = cb
+        this.index = index
+        this.whatEvent = whatEvent
+
+    function disconnect()
+        whatEvent.removeListener(this)
+
+    function reconnect()
+        whatEvent.addListener(cb)
+
+class BountyListenerNA extends BountyListener
+    construct(BountyCallback cb, int index, BountyEvent whatEvent)
+        super(cb, index, whatEvent)
+
+class BountyEvent
+    LinkedList<BountyCallback> listeners
+
+    construct()
+        listeners = new LinkedList<BountyCallback>()
+
+    function addListener(BountyCallback cb) returns BountyListener
+        listeners.add(cb)
+        return new BountyListenerNA(cb, listeners.indexOf(cb), this)
+
+    function removeListener(BountyListener dl)
+        listeners.removeAt(dl.index)
+    
+    function broadcast(Bounty bounty)
+        let scan = listeners.iterator()
+        while scan.hasNext()
+            scan.next().run(bounty)
+
+let bountyEvent = new BountyEvent()
+let bountyDeadEvent = new BountyEvent()
+
+public function registerBountyEvent(BountyCallback cb) returns BountyListener
+    return bountyEvent.addListener(cb)
+
+public function registerBountyDeadEvent(BountyCallback cb) returns BountyListener
+    return bountyDeadEvent.addListener(cb)
+
+public class Bounty
+    
+    static trigger controller
+
+    private static Table bounties0 = new Table()
+    private static Table bounties1 = new Table()
+    private static Table bounties2 = new Table()
+
+    private static int recursion
+
+    int amount
+    real size
+    real lifeSpan
+    real age
+    real speed
+    real direction
+    real fadePoint
+    string state
+    real height
+    boolean show
+    boolean showNothing
+    boolean allowFriendFire
+    string eff
+    boolean showEff
+    boolean permanent
+    player receiver
+    unit unitPos
+    texttag textTag
+
+    unit killingUnit
+    unit dyingUnit
+    
+    private vec2 pos
+    private string color
+    private boolean isLoc
+    private Table whoSee
+
+    construct()
+        recursion++
+        amount = 0
+        size = DEF_SIZE
+        lifeSpan = DEF_LIFE_SPAN
+        age = DEF_AGE
+        speed = DEF_SPEED
+        direction = DEF_DIRECTION
+        fadePoint = DEF_FADE_POINT
+        state = DEF_STATE
+        height = DEF_HEIGHT
+        show = DEF_SHOW
+        showNothing = DEF_SHOW_NOTHING
+        eff = DEF_EFFECT
+        showEff = DEF_SHOW_EFFECT
+        permanent = DEF_PERMANENT
+        isLoc = false
+        pos = ZERO2
+        color = null
+        whoSee = new Table()
+
+    ondestroy
+        recursion--
+        destroy whoSee
+
+    //The functions to set the bounty stats
+
+    static function setBase(integer id, integer b)
+        bounties0.saveInt(id, b)
+
+    static function setDice(integer id, integer d)
+        bounties1.saveInt(id, d)
+
+    static function setSide(integer id, integer s)
+        bounties2.saveInt(id, s)
+
+    static function set(integer id, integer b, integer d, integer s)
+        bounties0.saveInt(id, b)
+        bounties1.saveInt(id, d)
+        bounties2.saveInt(id, s)
+
+    //The functions to get the bounty stats (that you set before)
+
+    static function getBase(integer id) returns integer
+        return bounties0.loadInt(id)
+
+    static function getDice(integer id) returns integer
+        return bounties1.loadInt(id)
+
+    static function getSide(integer id) returns integer
+        return bounties2.loadInt(id)
+
+    static function get(integer id) returns integer
+        return getBase(id) + GetRandomInt(0, getDice(id) * getSide(id))
+
+    /**This function is runned at the map initialization, if you wanna use it to set your bounties, you can do it*/
+    static function setData()
+        /*Peasant*/ set('hpea', 15, 5, 3)
+
+        for i = 0 to bj_MAX_PLAYER_SLOTS
+            players[i].setState(PLAYER_STATE_GIVES_BOUNTY, 0)
+        
+    function canSee(player p, boolean flag)
+        whoSee.saveBoolean(p.getId(), flag)
+
+    function isSeeing(player p) returns boolean
+        return whoSee.loadBoolean(p.getId())
+
+    private static function sign(int i) returns string
+        if i<0
+            return ""
+        return "+"
+
+    function run() returns texttag
+        playerstate what = null
+        texttag tt
+
+        if recursion > LIMIT_RECURSION //If there is recursion that don't stop soon, the system stops automatically
+            error("There is a recursion with the Bounty system, check if you are not creating a infinite loop.")
+        
+        if state == "gold"
+            what = PLAYER_STATE_RESOURCE_GOLD
+        else if state == "lumber"
+            what = PLAYER_STATE_RESOURCE_LUMBER
+        else
+            error("Not valid state")
+
+        if amount == 0 and not showNothing
+            show = false
+            showEff = false
+
+        receiver.addState(what, amount)
+
+        if color == null
+            if state == "gold"
+                color = DEF_COLOR_GOLD
+            else if state == "lumber"
+                color = DEF_COLOR_LUMBER
+        
+        if not isLoc
+            if unitPos != null
+                pos = unitPos.getPos()
+            else
+                show = false
+                showEff = false //If there is no position to the text, the text and the effect won't show
+
+        let angl = direction * bj_DEGTORAD
+        let dx = speed * Cos(angl)
+        let dy = speed * Sin(angl)
+        
+        textTag = CreateTextTag()
+            ..setPermanent(permanent)
+            ..setText(color + sign(amount) + amount.toString() + "|r", size)
+            ..setVisibility(isSeeing(localPlayer) and show)
+            ..setPos(pos.x, pos.y, height)
+            ..setFadepoint(fadePoint)
+            ..setLifespan(lifeSpan)
+            ..setVelocity(dx, dy)
+            ..setAge(age)
+
+        if showEff
+            flashEffect(eff, pos)
+        
+        bountyEvent.broadcast(this)
+
+        tt = textTag
+
+        destroy this
+
+        return tt
+
+    function run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) returns texttag
+        amount = bounty
+        unitPos = pos
+        receiver = myplayer
+        canSee(myplayer, addplayer)
+        permanent = perm
+        return run()
+
+    function changeReceiver(player newPlayer, boolean removePrevious, boolean addNew)
+        canSee(newPlayer, not removePrevious)
+        receiver = newPlayer
+        canSee(newPlayer, addNew)
+
+    function setColor(string color)
+        this.color = color
+
+    function setColor(color color)
+        this.color = color.toColorString()
+
+    function setColor(colorA color)
+        this.color = color.toColorString()
+
+    function getColor() returns string
+        return color
+
+    function setPos(vec2 pos)
+        this.pos = pos
+        isLoc = true
+    
+    function getPos() returns vec2
+        return pos
+    
+    static function actions()
+        let curr = new Bounty()
+        curr.killingUnit = GetKillingUnit()
+        curr.dyingUnit = GetDyingUnit()
+        curr.amount = Bounty.get(curr.dyingUnit.getTypeId()) 
+    
+        curr.receiver = curr.killingUnit.getOwner()
+        curr.canSee(curr.receiver, true)
+        curr.unitPos = curr.dyingUnit
+
+        //Run event
+        bountyDeadEvent.broadcast(curr)
+    
+        if IsUnitEnemy(curr.dyingUnit, curr.receiver) or curr.allowFriendFire
+            curr.run()
+        else
+            destroy curr
+
+init
+    
+    nullTimer(() -> Bounty.setData())
+    Bounty.controller = CreateTrigger()
+        ..registerAnyUnitEvent(EVENT_PLAYER_UNIT_DEATH)
+        ..addAction(function Bounty.actions)

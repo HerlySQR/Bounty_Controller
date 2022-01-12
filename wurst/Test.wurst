@@ -1,0 +1,85 @@
+package Test
+
+import ClosureForGroups
+
+import BountyController
+
+init
+    print("- If you kill the peasants, you will lose gold.")
+    print("- If the killer is the archmage, the text will showed in his position.")
+    print("- If the killer is the mountain king, you will receive an extra bounty.")
+    print("- The footmans didn't get initialized, but the text is still showed.")
+    print("- The neutral creeps have differents changes.")
+    print("- Type \"get <Amount>\" to get some gold (the text will apear in the position of the Mountain King).")
+    print("- Type \"c\" to move the last created texttag to a random x offset.")
+    print("- Type \"d\" to get a bounty for each unit in the map")
+
+    // Init the bounties.
+    // Troll
+    Bounty.set('nftk', 15, 1, 3)
+    // Dragon
+    Bounty.set('nrdr', 100, 4, 3)
+    // Troll priest
+    Bounty.set('nfsh', 25, 4, 6)
+    // Spider
+    Bounty.set('nspb', 25, 4, 6)
+
+	//Edits
+	registerBountyDeadEvent(bounty -> begin
+    	if bounty.dyingUnit.getTypeId() == 'hfoo'
+        	bounty.showNothing = true
+    	if bounty.dyingUnit.getTypeId() == 'hpea'
+        	bounty.allowFriendFire = true
+        	bounty.amount *= -1
+    	if bounty.dyingUnit == gg_unit_nrdr_0006
+        	bounty.state = "lumber"
+    	if bounty.dyingUnit == gg_unit_nftk_0004
+        	UnitDamageTarget(gg_unit_Hamg_0007, gg_unit_hfoo_0008, 9000, true, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_ACID, WEAPON_TYPE_WHOKNOWS)
+        	bounty.size = 20.00
+    	if bounty.dyingUnit == gg_unit_nfsh_0005
+        	bounty.setColor("|cff0000ff")
+    	if bounty.killingUnit == gg_unit_Hamg_0007
+        	bounty.unitPos = bounty.killingUnit
+	end)
+
+	// Get money
+	CreateTrigger()
+		..registerPlayerChatEvent(players[0], "get ", false)
+		..addAction(() -> begin
+    		let curr = new Bounty()
+    		curr.amount = S2I(SubStringBJ(GetEventPlayerChatString(), 5, StringLength(GetEventPlayerChatString())))
+    		curr.unitPos = gg_unit_Hmkg_0001
+    		curr.receiver = GetTriggerPlayer()
+    		curr.canSee(curr.receiver, true)
+    		curr.run()
+		end)
+
+	// Global
+	CreateTrigger()
+		..registerPlayerChatEvent(players[0], "d", false)
+		..addAction(() -> begin
+			forUnitsInRect(bj_mapInitialPlayableArea, u -> begin
+				let curr = new Bounty()
+				curr.amount = GetRandomInt(0, 10)
+				curr.unitPos = u
+				curr.receiver = GetTriggerPlayer()
+				curr.canSee(curr.receiver, true)
+    			curr.run()
+			end)
+		end)
+
+vec3 temp
+texttag lastCreatedTextTag
+
+init
+	// Move text
+	registerBountyEvent(bounty -> begin
+		lastCreatedTextTag = bounty.textTag
+		temp = vec3(bounty.getPos().x, bounty.getPos().y, bounty.height)
+		// Hello
+		if bounty.dyingUnit == gg_unit_nspb_0017
+			lastCreatedTextTag.setText("Hello!, how are you?", 10)
+	end)
+	CreateTrigger()
+		..registerPlayerChatEvent(players[0], "c", false)
+		..addAction(() -> lastCreatedTextTag.setPos(temp.x + GetRandomReal(-100, 100), temp.y, temp.z))

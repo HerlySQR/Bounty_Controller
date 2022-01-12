@@ -1,0 +1,9 @@
+---
+projectName: Bounty Controller
+dependencies:
+- https://github.com/wurstscript/wurstStdlib2
+- https://github.com/wurstscript/wurstStdlib2:pre1.29
+buildMapData:
+  name: Bounty Controller
+  fileName: Bounty Controller Wurst
+  author: HerlySQR
