@@ -277,6 +277,8 @@ public class Bounty
         isLoc = true
     
     function getPos() returns vec2
+        if not isLoc
+            return unitPos.getPos()
         return pos
     
     static function actions()
