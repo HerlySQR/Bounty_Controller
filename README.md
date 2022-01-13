@@ -36,6 +36,9 @@ boolean permanent // This allows erase it (care, if this value is true and you d
 player receiver // The player who will receive the bounty.
 unit unitPos // The position of the text and the effect (If is a unit)
 texttag textTag // The texttag that will be displayed (only accesable from the registerBountyEvent).
+// Only with the registerBountyDeadEvent
+unit killingUnit
+unit dyingUnit
 ```
 There are also methods:
 ```java
@@ -47,5 +50,34 @@ getColor() returns string
 // Set the position with a vector instead of a unit (this has more priority)
 setPos(vec2 pos)
 getPos() returns vec2 // If pos is null, it returns the position of unitPos
-// 
+// Who can see the text tag
+canSee(player p, boolean flag)
+isSeeing(player p) returns boolean
+// Short the process of changing the receiver, because doing "receiver = <Other player>" sometimes is not enough for the previous functions
+changeReceiver(player newPlayer, boolean removePrevious, boolean addNew)
+// To run manually the process (and destroy the instance)
+run() returns texttag
+run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) returns texttag
 ```
+With the function ```registerBountyDeadEvent``` this values are editable, but with the ```registerBountyEvent``` is useless because the process ended
+Example:
+``` java
+// Lose money when you kill a friend
+registerBountyDeadEvent(bounty -> begin
+    if bounty.killingUnit.getOwner().isEnemyOf(bounty.dyingUnit.getOwner())
+        bounty.allowFriendFire = true
+        bounty.amount *= -1
+end)
+// Change the text
+registerBountyEvent(bounty -> bounty.textTag.setText("Hello!, how are you?", 10))
+```
+Also you can create your own bounties:
+``` java
+let curr = new Bounty()
+curr.amount = GetRandomInt(0, 10)
+curr.unitPos = GetTriggerUnit()
+curr.receiver = GetTriggerPlayer()
+curr.canSee(curr.receiver, true)
+curr.run()
+```
+Give me tips to improve this system, thank you.
