@@ -71,8 +71,8 @@ run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) 
 ```java
 registerBountyDeadEvent(bounty -> begin
     if bounty.getKillingUnit().getOwner().isEnemyOf(bounty.getDyingUnit().getOwner())
-        bounty.allowFriendFire = true
-        bounty.amount *= -1
+        bounty..setAllowFriendFire(true)
+              ..setAmount(bounty.getAmount() * -1)
 end)
 ```
 Result:<br />
