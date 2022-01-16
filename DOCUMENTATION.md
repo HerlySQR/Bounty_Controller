@@ -36,7 +36,7 @@ The value cb is a function that has an argument of the class ```Bounty``` and th
 These values you can get and also these others:
 <br />`unit getKillingUnit()` replace for GetKillingUnit()
 <br />`unit getDyingUnit()` replace for GetDyingUnit()
-<br />`textTag getTexttag()` The texttag that will be displayed (Only with the registerBountyEvent).
+<br />`texttag getTexttag()` The texttag that will be displayed (Only with the registerBountyEvent).
 
 **Methods:**<br />
 The color of the texttag
