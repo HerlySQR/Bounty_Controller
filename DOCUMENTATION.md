@@ -91,12 +91,11 @@ Result:<br />
 ![kill ally](https://www.hiveworkshop.com/attachments/1642298749666-png.393390/)<br />
 **Also you can create your own bounties**
 ``` java
-let curr = new Bounty()
-curr.amount = 1546
-curr.unitPos = GetTriggerUnit()
-curr.receiver = GetTriggerPlayer()
-curr.canSee(curr.receiver, true)
-curr.run()
+new Bounty()
+    ..setAmount(1546)
+    ..setUnitPos(GetTriggerUnit())
+    ..setReceiver(GetTriggerPlayer(), true)
+    ..run()
 ```
 Result:<br />
 ![kill ally](https://www.hiveworkshop.com/attachments/1642298855233-png.393391/)<br />
