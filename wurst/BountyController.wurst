@@ -88,27 +88,27 @@ public class Bounty
     private static int recursion
     private static constant SPEED_COEF = 0.071 / 128
 
-    int amount
-    real size
-    real lifeSpan
-    real age
-    real speed
-    real direction
-    real fadePoint
-    string state
-    real height
-    boolean show
-    boolean showNothing
-    boolean allowFriendFire
-    string eff
-    boolean showEff
-    boolean permanent
-    player receiver
-    unit unitPos
-    texttag textTag
+    private int amount
+    private real size
+    private real lifeSpan
+    private real age
+    private real speed
+    private real direction
+    private real fadePoint
+    private string state
+    private real height
+    private boolean show
+    private boolean showNothing
+    private boolean allowFriendFire
+    private string eff
+    private boolean showEff
+    private boolean permanent
+    private player receiver
+    private unit unitPos
+    private texttag textTag
 
-    unit killingUnit
-    unit dyingUnit
+    private unit killingUnit
+    private unit dyingUnit
     
     private vec2 pos
     private string color
@@ -138,6 +138,10 @@ public class Bounty
 
     ondestroy
         recursion--
+        receiver = null
+        unitPos = null
+        killingUnit = null
+        dyingUnit = null
         destroy whoSee
 
     //The functions to set the bounty stats
@@ -280,6 +284,118 @@ public class Bounty
         if not isLoc
             return unitPos.getPos()
         return pos
+
+    function getAmount() returns int
+        return amount
+
+    function setAmount(int amount)
+        this.amount = amount
+
+    function getSize() returns real
+        return size
+
+    function setSize(real size)
+        this.size = size
+
+    function getLifeSpan() returns real
+        return lifeSpan
+
+    function setLifeSpan(real lifeSpan)
+        this.lifeSpan = lifeSpan
+
+    function getAge() returns real
+        return age
+
+    function setAge(real age)
+        this.age = age
+
+    function getSpeed() returns real
+        return speed
+
+    function setSpeed(real speed)
+        this.speed = speed
+
+    function getDirection() returns real
+        return direction
+
+    function setDirection(real direction)
+        this.direction = direction
+
+    function getFadePoint() returns real
+        return fadePoint
+
+    function setFadePoint(real fadePoint)
+        this.fadePoint = fadePoint
+
+    function getState() returns string
+        return state
+
+    function setState(string state)
+        this.state = state
+
+    function getHeight() returns real
+        return height
+
+    function setHeight(real height)
+        this.height = height
+
+    function showing() returns boolean
+        return show
+
+    function setShow(boolean show)
+        this.show = show
+
+    function showingNothing() returns boolean
+        return showNothing
+
+    function setShowNothing(boolean showNothing)
+        this.showNothing = showNothing
+
+    function allowingFriendFire() returns boolean
+        return allowFriendFire
+
+    function setAllowFriendFire(boolean allowFriendFire)
+        this.allowFriendFire = allowFriendFire
+
+    function getEff() returns string
+        return eff
+
+    function setEff(string eff)
+        this.eff = eff
+
+    function showingEff() returns boolean
+        return showEff
+
+    function setShowEff(boolean showEff)
+        this.showEff = showEff
+
+    function isPermanent() returns boolean
+        return permanent
+
+    function setPermanent(boolean permanent)
+        this.permanent = permanent
+
+    function getReceiver() returns player
+        return receiver
+
+    function setReceiver(player receiver, boolean see)
+        this.receiver = receiver
+        canSee(receiver, see)
+
+    function getUnitPos() returns unit
+        return unitPos
+
+    function setUnitPos(unit unitPos)
+        this.unitPos = unitPos
+
+    function getTextTag() returns texttag
+        return textTag
+
+    function getKillingUnit() returns unit
+        return killingUnit
+
+    function getDyingUnit() returns unit
+        return dyingUnit
     
     static function actions()
         let curr = new Bounty()

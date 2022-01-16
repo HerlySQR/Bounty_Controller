@@ -26,32 +26,31 @@ init
 
 	//Edits
 	registerBountyDeadEvent(bounty -> begin
-    	if bounty.dyingUnit.getTypeId() == 'hfoo'
-        	bounty.showNothing = true
-    	if bounty.dyingUnit.getTypeId() == 'hpea'
-        	bounty.allowFriendFire = true
-        	bounty.amount *= -1
-    	if bounty.dyingUnit == gg_unit_nrdr_0006
-        	bounty.state = "lumber"
-    	if bounty.dyingUnit == gg_unit_nftk_0004
+    	if bounty.getDyingUnit().getTypeId() == 'hfoo'
+        	bounty.setShowNothing(true)
+    	if bounty.getDyingUnit().getTypeId() == 'hpea'
+        	bounty.setAllowFriendFire(true)
+        	bounty.setAmount(-bounty.getAmount())
+    	if bounty.getDyingUnit() == gg_unit_nrdr_0006
+        	bounty.setState("lumber")
+    	if bounty.getDyingUnit() == gg_unit_nftk_0004
         	UnitDamageTarget(gg_unit_Hamg_0007, gg_unit_hfoo_0008, 9000, true, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_ACID, WEAPON_TYPE_WHOKNOWS)
-        	bounty.size = 20.00
-    	if bounty.dyingUnit == gg_unit_nfsh_0005
+        	bounty.setSize(20.00)
+    	if bounty.getDyingUnit() == gg_unit_nfsh_0005
         	bounty.setColor("|cff0000ff")
-    	if bounty.killingUnit == gg_unit_Hamg_0007
-        	bounty.unitPos = bounty.killingUnit
+    	if bounty.getKillingUnit() == gg_unit_Hamg_0007
+        	bounty.setUnitPos(bounty.getKillingUnit())
 	end)
 
 	// Get money
 	CreateTrigger()
 		..registerPlayerChatEvent(players[0], "get ", false)
 		..addAction(() -> begin
-    		let curr = new Bounty()
-    		curr.amount = S2I(SubStringBJ(GetEventPlayerChatString(), 5, StringLength(GetEventPlayerChatString())))
-    		curr.unitPos = gg_unit_Hmkg_0001
-    		curr.receiver = GetTriggerPlayer()
-    		curr.canSee(curr.receiver, true)
-    		curr.run()
+    		new Bounty()
+    			..setAmount(S2I(SubStringBJ(GetEventPlayerChatString(), 5, StringLength(GetEventPlayerChatString()))))
+    			..setUnitPos(gg_unit_Hmkg_0001)
+    			..setReceiver(GetTriggerPlayer(), true)
+    			..run()
 		end)
 
 	// Global
@@ -59,12 +58,11 @@ init
 		..registerPlayerChatEvent(players[0], "d", false)
 		..addAction(() -> begin
 			forUnitsInRect(bj_mapInitialPlayableArea, u -> begin
-				let curr = new Bounty()
-				curr.amount = GetRandomInt(0, 10)
-				curr.unitPos = u
-				curr.receiver = GetTriggerPlayer()
-				curr.canSee(curr.receiver, true)
-    			curr.run()
+				new Bounty()
+					..setAmount(GetRandomInt(0, 10))
+					..setUnitPos(u)
+					..setReceiver(GetTriggerPlayer(), true)
+    				..run()
 			end)
 		end)
 
@@ -74,10 +72,10 @@ texttag lastCreatedTextTag
 init
 	// Move text
 	registerBountyEvent(bounty -> begin
-		lastCreatedTextTag = bounty.textTag
-		temp = vec3(bounty.getPos().x, bounty.getPos().y, bounty.height)
+		lastCreatedTextTag = bounty.getTextTag()
+		temp = vec3(bounty.getPos().x, bounty.getPos().y, bounty.getHeight())
 		// Hello
-		if bounty.dyingUnit == gg_unit_nspb_0017
+		if bounty.getDyingUnit() == gg_unit_nspb_0017
 			lastCreatedTextTag.setText("Hello!, how are you?", 10)
 	end)
 	CreateTrigger()
