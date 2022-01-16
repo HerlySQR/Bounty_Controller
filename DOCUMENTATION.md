@@ -75,6 +75,8 @@ registerBountyDeadEvent(bounty -> begin
         bounty.amount *= -1
 end)
 ```
+Result:<br />
+![kill ally](https://www.hiveworkshop.com/attachments/1642298492574-png.393389/)<br />
 **Get lumber instead of gold**
 ```java
 registerBountyDeadEvent(bounty -> bounty.setState("lumber"))
