@@ -82,13 +82,13 @@ Result:<br />
 registerBountyDeadEvent(bounty -> bounty.setState("lumber"))
 ```
 Result:<br />
-![kill ally](https://www.hiveworkshop.com/attachments/1642298922564-png.393392/)<br />
+![get lumber](https://www.hiveworkshop.com/attachments/1642298922564-png.393392/)<br />
 **Change the text**
 ```java
 registerBountyEvent(bounty -> bounty.textTag.setText("Hello!, how are you?", 10))
 ```
 Result:<br />
-![kill ally](https://www.hiveworkshop.com/attachments/1642298749666-png.393390/)<br />
+![change text](https://www.hiveworkshop.com/attachments/1642298749666-png.393390/)<br />
 **Also you can create your own bounties**
 ``` java
 new Bounty()
@@ -98,6 +98,6 @@ new Bounty()
     ..run()
 ```
 Result:<br />
-![kill ally](https://www.hiveworkshop.com/attachments/1642298855233-png.393391/)<br />
+![custom bounty](https://www.hiveworkshop.com/attachments/1642298855233-png.393391/)<br />
 
 Give me tips to improve this system, thank you.
