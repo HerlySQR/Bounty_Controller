@@ -70,7 +70,7 @@ run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) 
 **Lose money when you kill a friend**
 ```java
 registerBountyDeadEvent(bounty -> begin
-    if bounty.getKillingUnit().getOwner().isEnemyOf(bounty.getDyingUnit().getOwner())
+    if bounty.getKillingUnit().getOwner().isAllyOf(bounty.getDyingUnit().getOwner())
         bounty..setAllowFriendFire(true)
               ..setAmount(bounty.getAmount() * -1)
 end)
