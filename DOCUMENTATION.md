@@ -67,7 +67,7 @@ run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) 
 ```
 
 ## Examples:
-Lose money when you kill a friend
+**Lose money when you kill a friend**
 ```java
 registerBountyDeadEvent(bounty -> begin
     if bounty.getKillingUnit().getOwner().isEnemyOf(bounty.getDyingUnit().getOwner())
@@ -75,19 +75,19 @@ registerBountyDeadEvent(bounty -> begin
         bounty.amount *= -1
 end)
 ```
-Get lumber instead of gold
+**Get lumber instead of gold**
 ```java
 registerBountyDeadEvent(bounty -> bounty.setState("lumber"))
 ```
 Result:<br />
 ![kill ally](https://www.hiveworkshop.com/attachments/1642298922564-png.393392/)<br />
-Change the text
+**Change the text**
 ```java
 registerBountyEvent(bounty -> bounty.textTag.setText("Hello!, how are you?", 10))
 ```
 Result:<br />
 ![kill ally](https://www.hiveworkshop.com/attachments/1642298749666-png.393390/)<br />
-Also you can create your own bounties:
+**Also you can create your own bounties**
 ``` java
 let curr = new Bounty()
 curr.amount = 1546
