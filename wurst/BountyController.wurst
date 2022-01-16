@@ -143,6 +143,7 @@ public class Bounty
         killingUnit = null
         dyingUnit = null
         destroy whoSee
+        whoSee = null
 
     //The functions to set the bounty stats
 
