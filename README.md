@@ -4,3 +4,4 @@
 This system alows you to have control of almost everything related to the bounties (I am surprised that no one else has done this as far as I saw, I mean, I already saw other systems and none does everything that it does, and that I am not an expert and this is the first system that I share).
 
 **Documentation:** 
+[View Documentation](https://github.com/HerlySQR/Bounty_Controller/blob/main/DOCUMENTATION.md)
