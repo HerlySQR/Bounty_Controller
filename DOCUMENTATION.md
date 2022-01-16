@@ -28,11 +28,11 @@ The value cb is a function that has an argument of the class ```Bounty``` and th
 <br />`setShow(boolean show)` To show the text or not.
 <br />`setShowNothing(boolean showNothing)` If the Bounty is 0 by default the text is not showed, if you set this to true, the text will be showed even if the bounty is 0.
 <br />`setAllowFriendFire(boolean allowFriendFire)` By default the bounty only will happen if the dying unit is enemy of the killing unit, if you set this to true, the bounty will happen even if they weren't enemies.
-<br />`setEff(string eff) The root of the effect that will be displayed (In the same place of the text).
-<br />`setShowEff(boolean showEff) The effect will be displayed if this value is true.
-<br />`setPermanent(boolean permanent) This allows erase it (care, if this value is true and you don't use the texttag later it can be an object leak)
-<br />`setReceiver(player receiver, boolean canSee) The player who will receive the bounty (the boolean is to set if can see the text tag).
-<br />`setUnitPos(unit unitPos) The position of the text and the effect (If is a unit)
+<br />`setEff(string eff)` The root of the effect that will be displayed (In the same place of the text).
+<br />`setShowEff(boolean showEff)` The effect will be displayed if this value is true.
+<br />`setPermanent(boolean permanent)` This allows erase it (care, if this value is true and you don't use the texttag later it can be an object leak)
+<br />`setReceiver(player receiver, boolean canSee)` The player who will receive the bounty (the boolean is to set if can see the text tag).
+<br />`setUnitPos(unit unitPos)` The position of the text and the effect (If is a unit)
 These values you can get and also these others:
 <br />`unit getKillingUnit()` replace for GetKillingUnit()
 <br />`unit getDyingUnit()` replace for GetDyingUnit()
