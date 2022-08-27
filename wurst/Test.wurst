@@ -25,7 +25,7 @@ init
     Bounty.set('nspb', 25, 4, 6)
 
 	//Edits
-	registerBountyDeadEvent(bounty -> begin
+	Bounty.onDead(bounty -> begin
     	if bounty.getDyingUnit().getTypeId() == 'hfoo'
         	bounty.setShowNothing(true)
     	if bounty.getDyingUnit().getTypeId() == 'hpea'
@@ -65,13 +65,22 @@ init
     				..run()
 			end)
 		end)
+	
+	Bounty.onRun(bounty -> begin
+		if bounty.getDyingUnit().getTypeId() == 'hfoo'
+			new Bounty()
+				..setAmount(GetRandomInt(10, 20))
+				..setUnitPos(gg_unit_Hmkg_0001)
+				..setReceiver(players[0], true)
+    			..run()
+	end)
 
 vec3 temp
 texttag lastCreatedTextTag
 
 init
 	// Move text
-	registerBountyEvent(bounty -> begin
+	Bounty.onRun(bounty -> begin
 		lastCreatedTextTag = bounty.getTextTag()
 		temp = vec3(bounty.getPos().x, bounty.getPos().y, bounty.getHeight())
 		// Hello

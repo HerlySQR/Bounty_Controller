@@ -4,82 +4,52 @@ import Table
 import LinkedList
 import ClosureTimers
 import ErrorHandling
+import Annotations
 
 //This constants can be edited (obviously only valid values)
-constant string DEF_COLOR_GOLD = "|cffffcc00"
-constant string DEF_COLOR_LUMBER = "|cff32cd32"
-constant real DEF_SIZE = 10.00
-constant real DEF_LIFE_SPAN = 3.50
-constant real DEF_AGE = 0.00
-constant real DEF_SPEED = 64
-constant real DEF_DIRECTION = 90
-constant real DEF_FADE_POINT = 2.50
-constant string DEF_STATE = "gold"
-constant real DEF_HEIGHT = 0
-constant boolean DEF_SHOW = true
-constant boolean DEF_SHOW_NOTHING = false
-constant boolean DEF_ALLOW_FRIEND_FIRE = false
-constant string DEF_EFFECT = "UI\\Feedback\\GoldCredit\\GoldCredit.mdl"
-constant boolean DEF_SHOW_EFFECT = true
-constant boolean DEF_PERMANENT = false
-constant integer LIMIT_RECURSION = 16 // If a loop caused by recursion is doing in porpouse you can edit the tolerance of how many calls can do
+@configurable constant string DEF_COLOR_GOLD = "|cffffcc00"
+@configurable constant string DEF_COLOR_LUMBER = "|cff32cd32"
+@configurable constant real DEF_SIZE = 10.00
+@configurable constant real DEF_LIFE_SPAN = 3.50
+@configurable constant real DEF_AGE = 0.00
+@configurable constant real DEF_SPEED = 64
+@configurable constant angle DEF_DIRECTION = 90 .asAngleDegrees()
+@configurable constant real DEF_FADE_POINT = 2.50
+@configurable constant string DEF_STATE = "gold" // or "lumber"
+@configurable constant real DEF_HEIGHT = 0
+@configurable constant boolean DEF_SHOW = true
+@configurable constant boolean DEF_SHOW_NOTHING = false
+@configurable constant boolean DEF_ALLOW_FRIEND_FIRE = false
+@configurable constant string DEF_EFFECT = "UI\\Feedback\\GoldCredit\\GoldCredit.mdl"
+@configurable constant boolean DEF_SHOW_EFFECT = true
+@configurable constant boolean DEF_PERMANENT = false
+@configurable constant integer LIMIT_RECURSION = 16 // If a loop caused by recursion is doing in porpouse you can edit the tolerance of how many calls can do
 
 // End of configuration
 
-// To register and broadcast bounty events
-interface BountyCallback
-    function run(Bounty bounty)
-
+/** To register and broadcast bounty events*/
 public abstract class BountyListener
-    int index
-    BountyEvent whatEvent
-    BountyCallback cb
+    protected int index
+    protected LinkedList<BountyListener> list
 
-    construct(BountyCallback cb, int index, BountyEvent whatEvent)
-        this.cb = cb
-        this.index = index
-        this.whatEvent = whatEvent
+    abstract function run(Bounty bounty)
 
     function disconnect()
-        whatEvent.removeListener(this)
+        list.remove(this)
 
     function reconnect()
-        whatEvent.addListener(cb)
+        list.addAt(this, index)
 
-class BountyListenerNA extends BountyListener
-    construct(BountyCallback cb, int index, BountyEvent whatEvent)
-        super(cb, index, whatEvent)
+@deprecated("Use Bounty.onRun instead")
+public function registerBountyEvent(BountyListener cb) returns BountyListener
+    return Bounty.onRun(cb)
 
-class BountyEvent
-    LinkedList<BountyCallback> listeners
-
-    construct()
-        listeners = new LinkedList<BountyCallback>()
-
-    function addListener(BountyCallback cb) returns BountyListener
-        listeners.add(cb)
-        return new BountyListenerNA(cb, listeners.indexOf(cb), this)
-
-    function removeListener(BountyListener dl)
-        listeners.removeAt(dl.index)
-    
-    function broadcast(Bounty bounty)
-        let scan = listeners.iterator()
-        while scan.hasNext()
-            scan.next().run(bounty)
-
-let bountyEvent = new BountyEvent()
-let bountyDeadEvent = new BountyEvent()
-
-public function registerBountyEvent(BountyCallback cb) returns BountyListener
-    return bountyEvent.addListener(cb)
-
-public function registerBountyDeadEvent(BountyCallback cb) returns BountyListener
-    return bountyDeadEvent.addListener(cb)
+@deprecated("Use Bounty.onDead instead")
+public function registerBountyDeadEvent(BountyListener cb) returns BountyListener
+    return Bounty.onDead(cb)
 
 public class Bounty
-    
-    static trigger controller
+    protected static trigger controller
 
     private static Table bounties0 = new Table()
     private static Table bounties1 = new Table()
@@ -88,12 +58,15 @@ public class Bounty
     private static int recursion
     private static constant SPEED_COEF = 0.071 / 128
 
+    private static LinkedList<BountyListener> onRun = new LinkedList<BountyListener>()
+    private static LinkedList<BountyListener> onDead = new LinkedList<BountyListener>()
+
     private int amount
     private real size
     private real lifeSpan
     private real age
     private real speed
-    private real direction
+    private angle direction
     private real fadePoint
     private string state
     private real height
@@ -156,6 +129,7 @@ public class Bounty
     static function setSide(integer id, integer s)
         bounties2.saveInt(id, s)
 
+    /** Set the received bounty when the unit is killed*/
     static function set(integer id, integer b, integer d, integer s)
         bounties0.saveInt(id, b)
         bounties1.saveInt(id, d)
@@ -172,27 +146,52 @@ public class Bounty
     static function getSide(integer id) returns integer
         return bounties2.loadInt(id)
 
+    /** Get the bounty the you would get if the unit is killed (You should set it before)*/
     static function get(integer id) returns integer
         return getBase(id) + GetRandomInt(0, getDice(id) * getSide(id))
 
-    /**This function is runned at the map initialization, if you wanna use it to set your bounties, you can do it*/
-    static function setData()
+    protected static function setData()
         /*Peasant*/ set('hpea', 15, 5, 3)
 
         for i = 0 to bj_MAX_PLAYER_SLOTS
             players[i].setState(PLAYER_STATE_GIVES_BOUNTY, 0)
-        
+    
+    /** Enables the death trigger*/
+    static function enable()
+        controller.enable()
+    
+    /** Disables the death trigger*/
+    static function disable()
+        controller.disable()
+    
+    /** Add a callback that runs when a unit kills another*/
+    static function onDead(BountyListener cb) returns BountyListener
+        onDead.add(cb)
+        cb.list = onDead
+        cb.index = onDead.indexOf(cb)
+        return cb
+    
+    /** Add a callback that runs a bounty was runned*/
+    static function onRun(BountyListener cb) returns BountyListener
+        onRun.add(cb)
+        cb.list = onRun
+        cb.index = onRun.indexOf(cb)
+        return cb
+    
+    /** Set if the player can see the bounty*/
     function canSee(player p, boolean flag)
         whoSee.saveBoolean(p.getId(), flag)
 
+    /** Returns if the player can see the bounty*/
     function isSeeing(player p) returns boolean
         return whoSee.loadBoolean(p.getId())
 
     private static function sign(int i) returns string
-        if i<0
+        if i < 0
             return ""
         return "+"
 
+    /** Run the bounty and get the texttag*/
     function run() returns texttag
         playerstate what = null
         texttag tt
@@ -227,9 +226,6 @@ public class Bounty
                 showEff = false // If there is no position to the text, the text and the effect won't show
 
         speed *= SPEED_COEF
-        let angl = direction * bj_DEGTORAD
-        let dx = speed * Cos(angl)
-        let dy = speed * Sin(angl)
         
         textTag = CreateTextTag()
             ..setPermanent(permanent)
@@ -238,13 +234,14 @@ public class Bounty
             ..setPos(pos.x, pos.y, height)
             ..setFadepoint(fadePoint)
             ..setLifespan(lifeSpan)
-            ..setVelocity(dx, dy)
+            ..setVelocity(speed * direction.cos(), speed * direction.sin())
             ..setAge(age)
 
         if showEff
             flashEffect(eff, pos)
         
-        bountyEvent.broadcast(this)
+        for cb in onRun
+            cb.run(this)
 
         tt = textTag
 
@@ -252,6 +249,7 @@ public class Bounty
 
         return tt
 
+    /** Run the bounty and get the texttag*/
     function run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) returns texttag
         amount = bounty
         unitPos = pos
@@ -260,6 +258,7 @@ public class Bounty
         permanent = perm
         return run()
 
+    /** Change the player who will get the bounty and set if the new and/or old can see it*/
     function changeReceiver(player newPlayer, boolean removePrevious, boolean addNew)
         canSee(newPlayer, not removePrevious)
         receiver = newPlayer
@@ -272,11 +271,12 @@ public class Bounty
         this.color = color.toColorString()
 
     function setColor(colorA color)
-        this.color = color.toColorString()
+        this.color = color.withoutAlpha().toColorString()
 
     function getColor() returns string
         return color
 
+    /** Set the position of the bounty (this has more priority than unitPos)*/
     function setPos(vec2 pos)
         this.pos = pos
         isLoc = true
@@ -316,10 +316,14 @@ public class Bounty
     function setSpeed(real speed)
         this.speed = speed
 
-    function getDirection() returns real
+    function getDirection() returns angle
         return direction
 
+    @deprecated("Pass an angle instead")
     function setDirection(real direction)
+        this.direction = direction.asAngleDegrees()
+
+    function setDirection(angle direction)
         this.direction = direction
 
     function getFadePoint() returns real
@@ -346,9 +350,11 @@ public class Bounty
     function setShow(boolean show)
         this.show = show
 
+    /** Get if the bounty appears even if is 0*/
     function showingNothing() returns boolean
         return showNothing
 
+    /** Set if the bounty appears even if is 0*/
     function setShowNothing(boolean showNothing)
         this.showNothing = showNothing
 
@@ -398,7 +404,7 @@ public class Bounty
     function getDyingUnit() returns unit
         return dyingUnit
     
-    static function actions()
+    protected static function actions()
         let curr = new Bounty()
         curr.killingUnit = GetKillingUnit()
         curr.dyingUnit = GetDyingUnit()
@@ -409,7 +415,8 @@ public class Bounty
         curr.unitPos = curr.dyingUnit
 
         //Run event
-        bountyDeadEvent.broadcast(curr)
+        for cb in onDead
+            cb.run(curr)
     
         if IsUnitEnemy(curr.dyingUnit, curr.receiver) or curr.allowFriendFire
             curr.run()
