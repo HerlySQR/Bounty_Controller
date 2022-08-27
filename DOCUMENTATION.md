@@ -10,8 +10,8 @@ Bounty.set(<Unit-type id>, <base bounty>, <number of dices>, <sides per dice>)
 ```
 or in other case the bounty will be 0, and when the events will be fired, those you register with the functions:
 ```java
-registerBountyDeadEvent(BountyCallback cb) // Fires when a unit kills another
-registerBountyEvent(BountyCallback cb) // Fires everytime the method run (explained later) is fired without problems
+Bounty.onDead(BountyListener cb) returns BountyListener // Fires when a unit kills another
+Bounty.onRun(BountyListener cb) returns BountyListener // Fires everytime the method run (explained later) is fired without problems
 ```
 The value cb is a function that has an argument of the class ```Bounty``` and the procces works like this:
 ![Bounty Process](https://www.hiveworkshop.com/attachments/1642297398419-png.393388/)
@@ -21,7 +21,7 @@ The value cb is a function that has an argument of the class ```Bounty``` and th
 <br />`setLifeSpan(real lifeSpan)` The max. lifetime of the text.
 <br />`setAge(real age)` For some reason the x,y position of the texttag respect to the camera depends of its speed and age, so you can edit it.
 <br />`setSpeed(real speed)` The speed of the text.
-<br />`setDirection(real direction)` The direction to the texttag will move.
+<br />`setDirection(angle direction)` The direction to the texttag will move.
 <br />`setFadePoint(real fadePoint)` How many seconds the text will fade after apear.
 <br />`setState(string state)` What type of bounty the player will receive (only "gold" and "lumber" are valid).
 <br />`setHeight(real height)` How many distance the text will be from the floor.
@@ -69,7 +69,7 @@ run(integer bounty, unit pos, player myplayer, boolean addplayer, boolean perm) 
 ## Examples:
 **Lose money when you kill a friend**
 ```java
-registerBountyDeadEvent(bounty -> begin
+Bounty.onDead(bounty -> begin
     if bounty.getKillingUnit().getOwner().isAllyOf(bounty.getDyingUnit().getOwner())
         bounty..setAllowFriendFire(true)
               ..setAmount(bounty.getAmount() * -1)
@@ -79,13 +79,13 @@ Result:<br />
 ![kill ally](https://www.hiveworkshop.com/attachments/1642298492574-png.393389/)<br />
 **Get lumber instead of gold**
 ```java
-registerBountyDeadEvent(bounty -> bounty.setState("lumber"))
+Bounty.onDead(bounty -> bounty.setState("lumber"))
 ```
 Result:<br />
 ![get lumber](https://www.hiveworkshop.com/attachments/1642298922564-png.393392/)<br />
 **Change the text**
 ```java
-registerBountyEvent(bounty -> bounty.textTag.setText("Hello!, how are you?", 10))
+Bounty.onRun(bounty -> bounty.getTextTag().setText("Hello!, how are you?", 10))
 ```
 Result:<br />
 ![change text](https://www.hiveworkshop.com/attachments/1642298749666-png.393390/)<br />
